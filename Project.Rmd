@@ -5,12 +5,25 @@ date: "12/10/2021"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r}
+install.packages("tidyverse")
+install.packages("ggplot2")
+install.packages("dplyr")
 ```
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+```
+
 
 ```{r}
 dataset <- read.csv(file = "student-por.csv")
 dataset
+
+dataset %>% 
+  select(age) %>% 
+  group_by(age) %>% 
+  count(age)
 ```
 
