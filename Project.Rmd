@@ -1,29 +1,187 @@
 ---
-title: "Project"
+title: "Project_"
 author: "Carolina Costa"
 date: "12/10/2021"
 output: html_document
 ---
-
-```{r}
-install.packages("tidyverse")
-install.packages("ggplot2")
-install.packages("dplyr")
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+#message = FALSE
 ```
-```{r}
+
+```{r, include = FALSE}
 library(tidyverse)
 library(ggplot2)
 library(dplyr)
+library(ggpol)
+library(gtable)
+library(stringr)
+library(grid)
+library(ggridges)
 ```
 
+
+```{r, include = FALSE}
+#include = FALSE
+dataset1 <- read.csv("data/student-mat.csv", sep = ";")
+dataset2 <- read.csv("data/student-por.csv", sep = ";")
+#dataset1
+#dataset2
+
+student_1 <- rbind(dataset1, dataset2) 
+#student_1
+```
 
 ```{r}
-dataset <- read.csv(file = "student-por.csv")
-dataset
-
-dataset %>% 
-  select(age) %>% 
-  group_by(age) %>% 
-  count(age)
+number_of_students_per_school <- dataset1 %>% 
+  group_by(school) %>% 
+  count() %>% 
+  pull(n)
 ```
+
+```{r}
+group1 <- dataset1 %>%
+  group_by(school, sex, age, studytime) %>% 
+  count() %>% 
+  mutate(percient = ifelse(school == "GP", n/number_of_students_per_school[1]*100*(-1), n/number_of_students_per_school[2]*100), complete_name = ifelse(school == "GP", "School of Gabriel Pereira", "School of Mousinho da Silveira"))
+```
+
+```{r}
+group1 %>% 
+  ggplot(aes(x = factor(age), y = percient, fill = sex)) +
+  geom_bar(stat = "identity", alpha = 0.9) +
+  facet_share(~ complete_name, dir = "h", scales = "free", reverse_num = TRUE) +
+  scale_y_continuous(breaks = c(-30, -20, -10, 0, 10, 20, 30, 40, 50)) +
+  coord_flip() +
+  labs(title = "Comparison of percentage of students with different ages in two schools",
+       y = "Number of students (in %)",
+       x = "Age (in years)",
+       fill = "Gender") +
+  scale_fill_brewer(palette = "Dark2", name = "Gender", labels = c("Female", "Male")) +
+  theme_bw() +
+  theme(panel.grid.minor.x = element_blank(),
+        plot.title = element_text(family = "sans", face="bold", size = 15, margin=margin(0,0,20,0), hjust = 0.17), 
+        legend.title = element_text(size=11, face="bold"), 
+        plot.margin = unit(c(1, 8, 0.5, 0.5), "lines"), 
+        legend.position=c(1.2,0.5),
+        axis.title.y = element_text(margin = margin(r = -8)))
+```
+```{r}
+student_1_pivot <- student_1 %>% 
+  select(school, G1, G2, G3) %>% 
+  pivot_longer(-school, names_to = "Semester", values_to = "Grades")
+```
+```{r}
+student_1_pivot %>% 
+  ggplot(aes(x=Grades,y=Semester, color = school, fill = school)) +
+  geom_density_ridges(jittered_points = FALSE, scale = 0.99, size = 0.25, alpha = 0.8) +
+  scale_fill_brewer(palette = "Dark2", name = "Schools", labels = c("School of Gabriel Pereira", "School of Mousinho da Silveira")) +
+  scale_color_brewer(palette = "Dark2", guide = "none") +
+  scale_y_discrete(labels = c("First Semester", "Second Semester ", "Average of both Semesters"), expand = c(0.1,0)) +
+  scale_x_continuous(limits = c(0, 20), expand = c(0.5, 0), breaks = c(0, 10, 20)) +
+  labs(title = "Comparison of grades in two schools") +
+  theme(axis.line.x = element_line(color = "grey", size = 0.2, linetype = "solid"),
+        panel.grid.major.y = element_line(colour = "gray", size = 0.2),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(), 
+        panel.background = element_rect(fill = "white"),
+        axis.title.y = element_blank(),
+        #axis.title.x = element_text(hjust = -0.1, vjust = -0.4),
+        legend.position = "bottom",
+        legend.title = element_text(size=11, face="bold"),
+        legend.direction = "horizontal",
+        axis.title.x = element_text(face = "bold"),
+        plot.title = element_text(face = "bold", margin=margin(0,0,20,0), hjust = 0.5))
+```
+
+```{r}
+student_edu <- student_1 %>% 
+  select(school, Fedu, Medu) %>%
+  pivot_longer(-c(school), names_to = "Parents", values_to = "Value")
+
+student_job <- student_1 %>% 
+  select(school, Fjob, Mjob) %>%
+  pivot_longer(-c(school), names_to = "Parents", values_to = "Value")
+
+student_comb <- rbind(student_edu, student_job) %>% 
+  group_by(Parents, Value) %>% 
+  count() %>% 
+  rename(numbers = n)
+student_comb$names <- c("a_1", "a_2", "a_3", "a_4", "a_5", "b_1", "b_2", "b_3", "b_4", "b_5",
+                        "c_1", "c_2", "c_3", "c_4", "c_5", "d_1", "d_2", "d_3", "d_4", "d_5")
+```
+
+```{r}
+Parents <- c("Fedu", "Fjob", "Medu", "Mjob", "Fedu", "Fjob", "Medu", "Mjob")
+Value <- c("", "", "", "", "", "", "", "")
+numbers <- c(0, 0, 0, 0, 0, 0, 0, 0)
+names <- c("a_6", "b_6", "c_6", "d_6", "a_7", "b_7", "c_7", "d_7")
+empty_data <- data.frame(Parents, Value, numbers, names)
+
+student_data <- rbind(student_comb, empty_data)
+student_arrange <- student_data %>% 
+  arrange(Parents)
+student_arrange$index <- 1:nrow(student_arrange)
+list_numbers <- student_arrange %>% 
+  pull(numbers)
+```
+```{r}
+student_arrange$string_names <- c("no education : 9", "primary education : 256", "5th to 9th grade : 324", "secondary education : 231", "higher education : 224", "", "",
+                          "at_home : 62", "health : 41", "other : 584", "services : 292", "teacher : 65", "", "",
+                          "9 : no education", "202 : primary education", "289 : 5th to 9th grade", "238 : secondary education", "306 : higher education", "", "",
+                          "194 : at_home", "82 : health", "399 : other", "239 : services", "130 : teacher", "", "")
+student_arrange
+```
+
+```{r}
+label_data <- student_arrange
+number_of_bar <- nrow(label_data)
+angle <- 90 - 360 * (label_data$index-0.5) /number_of_bar     # I substract 0.5 because the letter must have the angle of the center of the bars. Not extreme right(1) or extreme left (0)
+label_data$hjust <- ifelse( angle < -90, 1, 0)
+label_data$angle <- ifelse(angle < -90, angle+180, angle)
+```
+```{r}
+base_data <- student_arrange %>% 
+  group_by(Parents) %>% 
+  summarize(start=min(index), end=max(index) - 2) %>% 
+  rowwise() %>% 
+  mutate(title=mean(c(start, end)))
+```
+```{r}
+student_arrange %>% 
+  arrange(Parents) %>% 
+  ggplot(aes(x = factor(names), y = numbers, fill = Parents)) +
+  geom_bar(stat = "identity", alpha = 0.8) +
+  ylim(-900, 700) +
+  theme_minimal() +
+  theme(axis.text = element_blank(), 
+        axis.title = element_blank(), 
+        panel.grid = element_blank(),
+        plot.margin = unit(rep(-1,4), "cm")) +
+  coord_polar(start = 0) +
+  geom_text(data = label_data, 
+            aes(x = factor(names), y = numbers + 20, label = string_names, hjust = hjust), 
+            color = "black", fontface = "bold", size = 2, 
+            angle = label_data$angle, inherit.aes = FALSE) +
+  geom_segment(data=base_data, aes(x = start, y = -5, xend = end, yend = -5), 
+               colour = "black", alpha=0.8, size=0.6 , inherit.aes = FALSE )  +
+  geom_text(data=base_data, 
+            aes(x = title, y = -18, 
+                label=c("Father's education", "Father's job", "Mother's education", "Mother's job")), 
+            hjust=c(0.5,0.5,0.5,0.5), vjust = c(2.2, -1.3, -1.6, 2.2), colour = "black", alpha=0.8, size=2.5, 
+            angle = c(-31, 55, -31, 60),
+            fontface="bold", inherit.aes = FALSE) +
+  labs(title="Parents \n job \n education") +
+  scale_fill_brewer(palette = "Dark2") +
+  theme(legend.position = "None", 
+        plot.title = element_text(hjust = 0.5, vjust = -70, face = "bold"))
+```
+
+
+
+
+
+
+
+
 
