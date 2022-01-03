@@ -1,12 +1,12 @@
 ---
-title: "Project_"
-author: "Carolina Costa"
+title: "Project: Data visualisation"
+subtitle: "Comparisons of two portuguese schools"
+author: "Carolina Oliveira Costa"
 date: "12/10/2021"
 output: html_document
 ---
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE)
-#message = FALSE
 ```
 
 ```{r, include = FALSE}
@@ -19,34 +19,108 @@ library(stringr)
 library(grid)
 library(ggridges)
 ```
-
-
 ```{r, include = FALSE}
-#include = FALSE
-dataset1 <- read.csv("data/student-mat.csv", sep = ";")
-dataset2 <- read.csv("data/student-por.csv", sep = ";")
-#dataset1
-#dataset2
-
-student_1 <- rbind(dataset1, dataset2) 
-#student_1
+dataset_mat <- read.csv("data/student-mat.csv", sep = ";")
+dataset_mat
+dataset_por <- read.csv("data/student-por.csv", sep = ";")
+dataset_por
+student_rb <- rbind(dataset_mat, dataset_por) 
+student_rb
 ```
 
-```{r}
-number_of_students_per_school <- dataset1 %>% 
+## Introduction
+
+When searching for a data set, I wanted to search for some data about students and their grades. Here we have some studies about it. We also want to compare the data from two different high schools in Portugal. The two schools are School of Gabriel Pereira and School of Mousinho da Silveira. The School of Mousinho da Silveira is in Portalegre and the School of Gabriel Pereira is in Évora.
+
+## Information about the datasets
+
+First, let us a see what kind of dataset we have. In total we have two datasets given by the website. Both datasets show the following attributes:
+
+* student's sex;
+* student's gender;
+* student's age;
+* family size;
+* parent's cohabitation status;
+* mother's education;
+* father's education;
+* mother's job;
+* father's job;
+* reason to have chosen this school;
+* student's guardian;
+* travel time from home to school;
+* weekly time spend studying;
+* number of past class failures;
+* extra educational support;
+* extra paid classes within the course subject;
+* extra curricular activities;
+* attended nursery school;
+* desire of taking higher education;
+* Internet access at home;
+* With a romantic relationship;
+* quality of family relationship;
+* free time after school;
+* going out with friends;
+* workday alcohol consumption;
+* weekend alcohol consumption;
+* current health status;
+* number of school absences;
+* grade for the first period;
+* grade for the second period;
+* grade for the average of both periods.
+
+One difference between the two datasets is that one shows the grades for the Portuguese course and the other shows the grades for the Mathematics course. Also both datasets have different sizes: the dataset with the grades for the *Portuguese* course has $649$ students and the dataset with the grades for the *Mathematics* course has $395$ students.
+
+```{r, include=FALSE}
+dataset_mat %>% 
+  count() %>% 
+  pull()
+dataset_por %>% 
+  count() %>% 
+  pull()
+student_rb %>% 
+  count() %>% 
+  pull()
+```
+
+Here we have the dataset for the *Portuguese* course which looks like the following:
+```{r, echo= FALSE}
+dataset_por %>% 
+  head(3)
+```
+
+And the dataset for the *Mathematics* course which looks like the following:
+```{r, echo= FALSE}
+dataset_por %>% 
+  head(3)
+```
+
+Note that in both datasets there is no student id, so it is almost impossible to tell if the same students is in both datasets. One can compare two students from different datasets which have exactly the same values for the same attributes (except for the grades since the probability of having exactly the same grade on both periods for different courses is very low), then one can assume both students are the same person which are attending the two courses, namely *Portuguese* course and *Mathematics* course. However we are not going to assume that in this paper, since they can be two people having parallel lifes but are not necessarily the same person. The only thing that could make a certainty would be for example a student id or social security number of the student. So we are going to assume that the students taking the *Portuguese* course are not also taking the *Mathematics* course.
+
+After assuming the previous, we combined the two datasets one on top of the other, so we have every student in the same dataset. Here we have the first 3 lines of this dataset:
+```{r, echo = FALSE}
+student_rb %>% 
+  head(3)
+```
+
+We can see that the attributes haven't changed. 
+
+## Plots
+
+### Number of students
+
+```{r, include = FALSE}
+number_of_students_per_school <- student_rb %>% 
   group_by(school) %>% 
   count() %>% 
   pull(n)
 ```
-
-```{r}
-group1 <- dataset1 %>%
+```{r, include = FALSE}
+group1 <- student_rb %>%
   group_by(school, sex, age, studytime) %>% 
   count() %>% 
   mutate(percient = ifelse(school == "GP", n/number_of_students_per_school[1]*100*(-1), n/number_of_students_per_school[2]*100), complete_name = ifelse(school == "GP", "School of Gabriel Pereira", "School of Mousinho da Silveira"))
 ```
-
-```{r}
+```{r, echo=FALSE}
 group1 %>% 
   ggplot(aes(x = factor(age), y = percient, fill = sex)) +
   geom_bar(stat = "identity", alpha = 0.9) +
@@ -60,24 +134,27 @@ group1 %>%
   scale_fill_brewer(palette = "Dark2", name = "Gender", labels = c("Female", "Male")) +
   theme_bw() +
   theme(panel.grid.minor.x = element_blank(),
-        plot.title = element_text(family = "sans", face="bold", size = 15, margin=margin(0,0,20,0), hjust = 0.17), 
+        plot.title = element_text(family = "sans", face="bold", size = 14, margin=margin(0,0,20,0), hjust = 0.17), 
         legend.title = element_text(size=11, face="bold"), 
         plot.margin = unit(c(1, 8, 0.5, 0.5), "lines"), 
         legend.position=c(1.2,0.5),
         axis.title.y = element_text(margin = margin(r = -8)))
 ```
-```{r}
-student_1_pivot <- student_1 %>% 
+
+### Grades of the students 
+
+```{r, include = FALSE}
+student_1_pivot <- student_rb %>% 
   select(school, G1, G2, G3) %>% 
   pivot_longer(-school, names_to = "Semester", values_to = "Grades")
 ```
-```{r}
+```{r, echo=FALSE}
 student_1_pivot %>% 
   ggplot(aes(x=Grades,y=Semester, color = school, fill = school)) +
   geom_density_ridges(jittered_points = FALSE, scale = 0.99, size = 0.25, alpha = 0.8) +
   scale_fill_brewer(palette = "Dark2", name = "Schools", labels = c("School of Gabriel Pereira", "School of Mousinho da Silveira")) +
   scale_color_brewer(palette = "Dark2", guide = "none") +
-  scale_y_discrete(labels = c("First Semester", "Second Semester ", "Average of both Semesters"), expand = c(0.1,0)) +
+  scale_y_discrete(labels = c("First Period", "Second Period", "Average of both Periods"), expand = c(0.1,0)) +
   scale_x_continuous(limits = c(0, 20), expand = c(0.5, 0), breaks = c(0, 10, 20)) +
   labs(title = "Comparison of grades in two schools") +
   theme(axis.line.x = element_line(color = "grey", size = 0.2, linetype = "solid"),
@@ -86,20 +163,22 @@ student_1_pivot %>%
         panel.grid.minor.x = element_blank(), 
         panel.background = element_rect(fill = "white"),
         axis.title.y = element_blank(),
-        #axis.title.x = element_text(hjust = -0.1, vjust = -0.4),
         legend.position = "bottom",
         legend.title = element_text(size=11, face="bold"),
         legend.direction = "horizontal",
         axis.title.x = element_text(face = "bold"),
-        plot.title = element_text(face = "bold", margin=margin(0,0,20,0), hjust = 0.5))
+        plot.title = element_text(face = "bold", size = 14, margin=margin(0,0,20,0), hjust = 0.5), 
+        axis.ticks.y = element_blank())
 ```
 
-```{r}
-student_edu <- student_1 %>% 
+### Parents education and jobs
+
+```{r, include = FALSE}
+student_edu <- student_rb %>% 
   select(school, Fedu, Medu) %>%
   pivot_longer(-c(school), names_to = "Parents", values_to = "Value")
 
-student_job <- student_1 %>% 
+student_job <- student_rb %>% 
   select(school, Fjob, Mjob) %>%
   pivot_longer(-c(school), names_to = "Parents", values_to = "Value")
 
@@ -110,8 +189,7 @@ student_comb <- rbind(student_edu, student_job) %>%
 student_comb$names <- c("a_1", "a_2", "a_3", "a_4", "a_5", "b_1", "b_2", "b_3", "b_4", "b_5",
                         "c_1", "c_2", "c_3", "c_4", "c_5", "d_1", "d_2", "d_3", "d_4", "d_5")
 ```
-
-```{r}
+```{r, include = FALSE}
 Parents <- c("Fedu", "Fjob", "Medu", "Mjob", "Fedu", "Fjob", "Medu", "Mjob")
 Value <- c("", "", "", "", "", "", "", "")
 numbers <- c(0, 0, 0, 0, 0, 0, 0, 0)
@@ -125,46 +203,41 @@ student_arrange$index <- 1:nrow(student_arrange)
 list_numbers <- student_arrange %>% 
   pull(numbers)
 ```
-```{r}
+```{r, include = FALSE}
 student_arrange$string_names <- c("no education : 9", "primary education : 256", "5th to 9th grade : 324", "secondary education : 231", "higher education : 224", "", "",
                           "at_home : 62", "health : 41", "other : 584", "services : 292", "teacher : 65", "", "",
                           "9 : no education", "202 : primary education", "289 : 5th to 9th grade", "238 : secondary education", "306 : higher education", "", "",
                           "194 : at_home", "82 : health", "399 : other", "239 : services", "130 : teacher", "", "")
 student_arrange
 ```
-
-```{r}
+```{r, include = FALSE}
 label_data <- student_arrange
 number_of_bar <- nrow(label_data)
 angle <- 90 - 360 * (label_data$index-0.5) /number_of_bar     # I substract 0.5 because the letter must have the angle of the center of the bars. Not extreme right(1) or extreme left (0)
 label_data$hjust <- ifelse( angle < -90, 1, 0)
 label_data$angle <- ifelse(angle < -90, angle+180, angle)
 ```
-```{r}
+```{r, include = FALSE}
 base_data <- student_arrange %>% 
   group_by(Parents) %>% 
   summarize(start=min(index), end=max(index) - 2) %>% 
   rowwise() %>% 
   mutate(title=mean(c(start, end)))
 ```
-```{r}
+```{r, echo=FALSE}
 student_arrange %>% 
   arrange(Parents) %>% 
   ggplot(aes(x = factor(names), y = numbers, fill = Parents)) +
   geom_bar(stat = "identity", alpha = 0.8) +
   ylim(-900, 700) +
   theme_minimal() +
-  theme(axis.text = element_blank(), 
-        axis.title = element_blank(), 
-        panel.grid = element_blank(),
-        plot.margin = unit(rep(-1,4), "cm")) +
   coord_polar(start = 0) +
   geom_text(data = label_data, 
             aes(x = factor(names), y = numbers + 20, label = string_names, hjust = hjust), 
             color = "black", fontface = "bold", size = 2, 
             angle = label_data$angle, inherit.aes = FALSE) +
   geom_segment(data=base_data, aes(x = start, y = -5, xend = end, yend = -5), 
-               colour = "black", alpha=0.8, size=0.6 , inherit.aes = FALSE )  +
+               colour = "black", alpha=0.8, size=0.6 , inherit.aes = FALSE)  +
   geom_text(data=base_data, 
             aes(x = title, y = -18, 
                 label=c("Father's education", "Father's job", "Mother's education", "Mother's job")), 
@@ -173,10 +246,37 @@ student_arrange %>%
             fontface="bold", inherit.aes = FALSE) +
   labs(title="Parents \n job \n education") +
   scale_fill_brewer(palette = "Dark2") +
-  theme(legend.position = "None", 
+  theme(axis.text = element_blank(), 
+        axis.title = element_blank(), 
+        panel.grid = element_blank(),
+        plot.margin = unit(rep(-1,4), "cm"),
+        legend.position = "None", 
         plot.title = element_text(hjust = 0.5, vjust = -70, face = "bold"))
 ```
 
+## Conclusion
+
+## Sources
+
+Here are all the link used for my inspirations for the previous plots:
+
+(Bar plot)
+
+- 
+
+(Density plot)
+
+- https://edav.info/ridgeline.html
+- https://cran.r-project.org/web/packages/ggridges/vignettes/gallery.html
+- https://r-charts.com/distribution/ggridges/
+- 
+
+(Circular bar plot)
+
+- https://www.r-graph-gallery.com/297-circular-barplot-with-groups.html
+- https://www.data-to-viz.com/graph/circularbarplot.html
+- https://www.r-graph-gallery.com/296-add-labels-to-circular-barplot.html
+- 
 
 
 
