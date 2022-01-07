@@ -30,11 +30,15 @@ student_rb
 
 ## Introduction
 
-When searching for a data set, I wanted to search for some data about students and their grades. Here we have some studies about it. We also want to compare the data from two different high schools in Portugal. The two schools are School of Gabriel Pereira and School of Mousinho da Silveira. The School of Mousinho da Silveira is in Portalegre and the School of Gabriel Pereira is in Évora.
+When searching for a data set, I wanted to search for some data about students and their grades. Here we have some studies about it. The data was collected in $2008$, but published in $2014-11-27$.
+
+We will compare the data from two different high schools in Portugal. The two schools are School of Gabriel Pereira and School of Mousinho da Silveira. The School of Mousinho da Silveira is in Portalegre and the School of Gabriel Pereira is in Évora. Both schools are public schools, so we can assume that the level of teaching balanced is.
+
+We are going to study both students to award one which has the highest grades. Of course, only the grades will not determine which school is the best. However it can help us understand which variables effect more on the student's grade.
 
 ## Information about the datasets
 
-First, let us a see what kind of dataset we have. In total we have two datasets given by the website. Both datasets show the following attributes:
+First, let us a see what kind of data set we have. In total we have two data sets given by the website Machine Learning Repository. Both data sets show the following attributes:
 
 * student's sex;
 * student's gender;
@@ -69,6 +73,8 @@ First, let us a see what kind of dataset we have. In total we have two datasets 
 * grade for the average of both periods.
 
 One difference between the two datasets is that one shows the grades for the Portuguese course and the other shows the grades for the Mathematics course. Also both datasets have different sizes: the dataset with the grades for the *Portuguese* course has $649$ students and the dataset with the grades for the *Mathematics* course has $395$ students.
+
+Here every student is assumed to have one mother and one father.
 
 ```{r, include=FALSE}
 dataset_mat %>% 
@@ -108,6 +114,8 @@ We can see that the attributes haven't changed.
 
 ### Number of students
 
+Since we are comparing two schools, it is always interesting to look at the number of students in each age. Do both schools have a similar age range of students ?
+
 ```{r, include = FALSE}
 number_of_students_per_school <- student_rb %>% 
   group_by(school) %>% 
@@ -141,7 +149,19 @@ group1 %>%
         axis.title.y = element_text(margin = margin(r = -8)))
 ```
 
+In this plot we can see the comparison of the two schools in percentage of students. First, let us see the data for the *School of Gabriel Pereira*:
+
+It has the highest percentage of students with $16$ years of age. There isn't a lot of students which are between $20-22$ year old, since the percentages of students in those ages are close to $0$. There seems to be more or less as many females as males.
+
+Now for the *School of Mousinho da Silveira*:
+
+The highest percentage of students with a specific age is for those students of $18$ years old. This percentage is almost $30\%$ of  the total number of students. There is no student with $22$ years. However in this school we can clearly say that there are more female students than male students.
+
+Now if we would answer the question, we can say that the percentage of students for a specific range are very similar even though the the percentage of genders are not equal.
+
 ### Grades of the students 
+
+A good way to see if the teaching is good in particular schools is to see the grades for each school. Do the students of the school of Gabriel Pereira have better grades than those of the school of Mousinho de Silveira ? To answer that questions we are looking at the grades for *Mathematics course* and *Portuguese course*.
 
 ```{r, include = FALSE}
 student_1_pivot <- student_rb %>% 
@@ -156,7 +176,7 @@ student_1_pivot %>%
   scale_color_brewer(palette = "Dark2", guide = "none") +
   scale_y_discrete(labels = c("First Period", "Second Period", "Average of both Periods"), expand = c(0.1,0)) +
   scale_x_continuous(limits = c(0, 20), expand = c(0.5, 0), breaks = c(0, 10, 20)) +
-  labs(title = "Comparison of grades in two schools") +
+  labs(title = "The density of the grades between the Periods") +
   theme(axis.line.x = element_line(color = "grey", size = 0.2, linetype = "solid"),
         panel.grid.major.y = element_line(colour = "gray", size = 0.2),
         panel.grid.major.x = element_blank(),
@@ -171,34 +191,40 @@ student_1_pivot %>%
         axis.ticks.y = element_blank())
 ```
 
+While looking only at the density of the grades for the first Period and the Second Period we can see that the grades are more diverse in the Second Period than the First Period for both Schools.
+
+We can see a peak in the average of both Periods at grade $10$ for the school of *Mousinho da Silveira*. Clearly, there are much more students wanting or being able to just pass. Meanwhile the peak in the average of both Periods is for a number larger than $10$ for School of *Gabriel Pereira*. Also the density of grades for this school is much higher for grades greater than $10$ than for the other school. This means that the students of this school have higher grades than the students from the School of *Mousinho da Silveira*. This means that the award goes to him.
+
 ### Parents education and jobs
+
+One factor clearly influence the grade of one student, namely the parents! Having a stable life at home can help the student and his school education. The best for the teenager student would be to have parents that can help them with homework or studying at home, since in school they have the teacher for that. However not every mother and father have the possibility of helping for multiple reasons: they don't have enough school education about the subject, they don't have time because of job responsibilities, etc. 
 
 ```{r, include = FALSE}
 student_edu <- student_rb %>% 
   select(school, Fedu, Medu) %>%
-  pivot_longer(-c(school), names_to = "Parents", values_to = "Value")
+  pivot_longer(-c(school), names_to = "parents", values_to = "value")
 
 student_job <- student_rb %>% 
   select(school, Fjob, Mjob) %>%
-  pivot_longer(-c(school), names_to = "Parents", values_to = "Value")
+  pivot_longer(-c(school), names_to = "parents", values_to = "value")
 
 student_comb <- rbind(student_edu, student_job) %>% 
-  group_by(Parents, Value) %>% 
+  group_by(parents, value) %>% 
   count() %>% 
   rename(numbers = n)
 student_comb$names <- c("a_1", "a_2", "a_3", "a_4", "a_5", "b_1", "b_2", "b_3", "b_4", "b_5",
                         "c_1", "c_2", "c_3", "c_4", "c_5", "d_1", "d_2", "d_3", "d_4", "d_5")
 ```
 ```{r, include = FALSE}
-Parents <- c("Fedu", "Fjob", "Medu", "Mjob", "Fedu", "Fjob", "Medu", "Mjob")
-Value <- c("", "", "", "", "", "", "", "")
+parents <- c("Fedu", "Fjob", "Medu", "Mjob", "Fedu", "Fjob", "Medu", "Mjob")
+value <- c("", "", "", "", "", "", "", "")
 numbers <- c(0, 0, 0, 0, 0, 0, 0, 0)
 names <- c("a_6", "b_6", "c_6", "d_6", "a_7", "b_7", "c_7", "d_7")
-empty_data <- data.frame(Parents, Value, numbers, names)
+empty_data <- data.frame(parents, value, numbers, names)
 
 student_data <- rbind(student_comb, empty_data)
 student_arrange <- student_data %>% 
-  arrange(Parents)
+  arrange(parents)
 student_arrange$index <- 1:nrow(student_arrange)
 list_numbers <- student_arrange %>% 
   pull(numbers)
@@ -219,15 +245,15 @@ label_data$angle <- ifelse(angle < -90, angle+180, angle)
 ```
 ```{r, include = FALSE}
 base_data <- student_arrange %>% 
-  group_by(Parents) %>% 
+  group_by(parents) %>% 
   summarize(start=min(index), end=max(index) - 2) %>% 
   rowwise() %>% 
   mutate(title=mean(c(start, end)))
 ```
 ```{r, echo=FALSE}
 student_arrange %>% 
-  arrange(Parents) %>% 
-  ggplot(aes(x = factor(names), y = numbers, fill = Parents)) +
+  arrange(parents) %>% 
+  ggplot(aes(x = factor(names), y = numbers, fill = parents)) +
   geom_bar(stat = "identity", alpha = 0.8) +
   ylim(-900, 700) +
   theme_minimal() +
@@ -244,17 +270,34 @@ student_arrange %>%
             hjust=c(0.5,0.5,0.5,0.5), vjust = c(2.2, -1.3, -1.6, 2.2), colour = "black", alpha=0.8, size=2.5, 
             angle = c(-31, 55, -31, 60),
             fontface="bold", inherit.aes = FALSE) +
-  labs(title="Parents \n job \n education") +
+  labs(title="Parents'\n education and job\n careers") +
   scale_fill_brewer(palette = "Dark2") +
   theme(axis.text = element_blank(), 
         axis.title = element_blank(), 
         panel.grid = element_blank(),
         plot.margin = unit(rep(-1,4), "cm"),
         legend.position = "None", 
-        plot.title = element_text(hjust = 0.5, vjust = -70, face = "bold"))
+        plot.title = element_text(hjust = 0.5, vjust = -75, face = "bold"))
 ```
 
+At first glance, there are more students having a mother with higher education. In the other hand, there are more students with a father having only between $5th$ and $9th$ grade education. 
+
+A small remark would be that there is still parents with no education at all in $2014$. From this data, it seems that men are less motivated to continue theirs school education than women. 
+
+As expected, there are more mothers being stay-at-home mothers than there are fathers. There is a difference of $194-62 = 132$ stay-at-home parent. Now something not expected was that there are more women which are mothers working as a teacher or as in health department then men which are fathers. The difference between the numbers of mothers and fathers are $130-65 = 65$ teachers and $82-41 = 41$ jobs in health. The majority of the mother's and father's jobs are in other which makes sense since there are much more job categories now than just: teacher, services, health and stay_at_home.
+
 ## Conclusion
+
+Of course the study done here is just a small part of a poosible big study, however we can conclude some information from it. 
+First is that the age range of School of *Gabriel Pereira* is larger than the age range of the School of *Mousinho da Silveira*. This can mean that there are more students failing some classes or that the other school's students are giving up school education more frequently after $18$ years.
+However we stated that the students from School of *Gabriel Pereira* have better grades than the students of the School of *Mousinho da Silveira*. This fact kind of contradicts the first conclusion, because why is the grades so high even though there are so many students failing classes or giving up?
+Now the last plot could have helped us to understand the grades a little bit better but the category of "Others" for the jobs of the parents of the students is so vague. It is difficult to understand the origin of such good grades.
+
+At the end, the most important here was to find out which school has the highest grades. And the award for that goes to .... School of *Gabriel Pereira*. Now the question is why ? What are they doing differently from the School of *Mousinho da Silveira* that makes the students having better grades ? Maybe a further study will tell us.
+
+**Small criticism about the datasets**:
+
+Nowadays assuming that one student has one mother and one father would be incorrect, since there are homosexual couples and there are children without one parent, for example adoption by one single parent.
 
 ## Sources
 
@@ -262,21 +305,19 @@ Here are all the link used for my inspirations for the previous plots:
 
 (Bar plot)
 
-- 
+- https://erocoar.github.io/ggpol/
 
 (Density plot)
 
 - https://edav.info/ridgeline.html
 - https://cran.r-project.org/web/packages/ggridges/vignettes/gallery.html
 - https://r-charts.com/distribution/ggridges/
-- 
 
 (Circular bar plot)
 
 - https://www.r-graph-gallery.com/297-circular-barplot-with-groups.html
 - https://www.data-to-viz.com/graph/circularbarplot.html
 - https://www.r-graph-gallery.com/296-add-labels-to-circular-barplot.html
-- 
 
 
 
