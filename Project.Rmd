@@ -1,6 +1,6 @@
 ---
 title: "Project: Data visualisation"
-subtitle: "Comparisons of two portuguese schools"
+subtitle: "Comparisons of two portuguese highschools"
 author: "Carolina Oliveira Costa"
 date: "12/10/2021"
 output: html_document
@@ -8,6 +8,8 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE)
 ```
+
+## Introduction
 
 ```{r, include = FALSE}
 library(tidyverse)
@@ -19,6 +21,15 @@ library(stringr)
 library(grid)
 library(ggridges)
 ```
+
+When searching for a data set, we wanted to search for some data about students and their grades. Here we found one which was published in $2014-11-27$ with data collected in $2008$.
+
+We have data from two different high schools in Portugal. The two schools are School of Gabriel Pereira and School of Mousinho da Silveira. The School of Mousinho da Silveira is in Portalegre and the School of Gabriel Pereira is in Évora. Both schools are public schools, so we can assume that the level of teaching balanced is.
+
+We are going to study both schools to award one with the highest grades. Of course, only the grades will not determine which school is the best. However it can help us understand which variables effect more on the student's grade.
+
+## Information about the datasets
+
 ```{r, include = FALSE}
 dataset_mat <- read.csv("data/student-mat.csv", sep = ";")
 dataset_mat
@@ -28,53 +39,43 @@ student_rb <- rbind(dataset_mat, dataset_por)
 student_rb
 ```
 
-## Introduction
+The most interesting about this study was the data sets. In total we have two data sets given by the website Machine Learning Repository. Both data sets show the following attributes and their domains:
 
-When searching for a data set, I wanted to search for some data about students and their grades. Here we have some studies about it. The data was collected in $2008$, but published in $2014-11-27$.
+* student's sex: "GP" - Gabriel Pereira, "MS" - Mousinho da Silveira;
+* student's gender: "F" - female, "M" - male;
+* student's age: 15-22;
+* students's address: "U" - urban, "R" - rural; 
+* family size: "LE3" - less than 3 people, "GT3" - greater than 3;
+* parent's cohabitation status: "T" - living together, "A" - living apart;
+* mother's education: "0" - no education, "1" - primary education (until 4th grade), "2" - until 5th to 9th grade, "3" - secondary education, "4"- higher education;
+* father's education: "0" - no education, "1" - primary education (until 4th grade), "2" - until 5th to 9th grade, "3" - secondary education, "4"- higher education;
+* mother's job: "teacher", "health" - health care related, "services" - e.g. administrative or police, "at home" - stay-home mother, "other";
+* father's job: "teacher", "health" - health care related, "services" - e.g. administrative or police, "at home" - stay-home father, "other";
+* reason to have chosen this school: "home" - close to home, "reputation" - school reputation, "course" - course preference, "other";
+* student's guardian: "mother", "father", "other";
+* travel time from home to school: "1" - less than 15 min, "2" - 15 to 30 min, "3" - 30 min to 1 hour, "4" - more than 1 hour;
+* weekly time spend studying: "1" - less than 2 hours, "2" - 2 to 5 hours, "3" - 5 to 10 hours, "4" - more than 10 hours;
+* number of past class failures: "n" if 1<= n <3, else "4";
+* extra educational support: "yes", "no";
+* family educational support: "yes", "no";
+* extra paid classes within the course subject: "yes", "no";
+* extra curricular activities: "yes", "no";
+* attended nursery school: "yes", "no";
+* desire of taking higher education: "yes", "no";
+* Internet access at home: "yes", "no";
+* With a romantic relationship: "yes", "no";
+* quality of family relationship: "1" - very bad to "5" - excellent;
+* free time after school: "1" - very low to "5" - very high;
+* going out with friends: "1" - very low to "5" - very high;
+* workday alcohol consumption: "1" - very low to "5" - very high;
+* weekend alcohol consumption: "1" - very low to "5" - very high;
+* current health status: "1" - very bad to "5" - very good;
+* number of school absences: from "0" to "93";
+* grade for the first period: from "0" to "20";
+* grade for the second period: from "0" to "20";
+* grade for the average of both periods: from "0" to "20".
 
-We will compare the data from two different high schools in Portugal. The two schools are School of Gabriel Pereira and School of Mousinho da Silveira. The School of Mousinho da Silveira is in Portalegre and the School of Gabriel Pereira is in Évora. Both schools are public schools, so we can assume that the level of teaching balanced is.
-
-We are going to study both students to award one which has the highest grades. Of course, only the grades will not determine which school is the best. However it can help us understand which variables effect more on the student's grade.
-
-## Information about the datasets
-
-First, let us a see what kind of data set we have. In total we have two data sets given by the website Machine Learning Repository. Both data sets show the following attributes:
-
-* student's sex;
-* student's gender;
-* student's age;
-* family size;
-* parent's cohabitation status;
-* mother's education;
-* father's education;
-* mother's job;
-* father's job;
-* reason to have chosen this school;
-* student's guardian;
-* travel time from home to school;
-* weekly time spend studying;
-* number of past class failures;
-* extra educational support;
-* extra paid classes within the course subject;
-* extra curricular activities;
-* attended nursery school;
-* desire of taking higher education;
-* Internet access at home;
-* With a romantic relationship;
-* quality of family relationship;
-* free time after school;
-* going out with friends;
-* workday alcohol consumption;
-* weekend alcohol consumption;
-* current health status;
-* number of school absences;
-* grade for the first period;
-* grade for the second period;
-* grade for the average of both periods.
-
-One difference between the two datasets is that one shows the grades for the Portuguese course and the other shows the grades for the Mathematics course. Also both datasets have different sizes: the dataset with the grades for the *Portuguese* course has $649$ students and the dataset with the grades for the *Mathematics* course has $395$ students.
-
-Here every student is assumed to have one mother and one father.
+One of the differences between the two data sets is that one shows the grades for the *Portuguese* course and the other shows the grades for the *Mathematics* course. Also both data sets have different sizes: the data set with the grades for the *Portuguese* course has $649$ students and the data set with the grades for the *Mathematics* course has $395$ students. 
 
 ```{r, include=FALSE}
 dataset_mat %>% 
@@ -100,21 +101,32 @@ dataset_por %>%
   head(3)
 ```
 
-Note that in both datasets there is no student id, so it is almost impossible to tell if the same students is in both datasets. One can compare two students from different datasets which have exactly the same values for the same attributes (except for the grades since the probability of having exactly the same grade on both periods for different courses is very low), then one can assume both students are the same person which are attending the two courses, namely *Portuguese* course and *Mathematics* course. However we are not going to assume that in this paper, since they can be two people having parallel lifes but are not necessarily the same person. The only thing that could make a certainty would be for example a student id or social security number of the student. So we are going to assume that the students taking the *Portuguese* course are not also taking the *Mathematics* course.
+Note that in both data sets there is no student id, so it is almost impossible to tell if the same students are in both data sets. One can compare two students from different data sets which have exactly the same values for the same attributes (except for the grades since the probability of having exactly the same grade on both periods for different courses is very low), then one can assume both students are the same person which are attending this two courses. However  in this paper we are not going to assume that, since they can be two people having parallel lifes but are not necessarily the same person. The only thing that could make a certainty would be for example a student id or social security number of the student. So we are going to assume that the students taking the *Portuguese* course are not also taking the *Mathematics* course.
 
-After assuming the previous, we combined the two datasets one on top of the other, so we have every student in the same dataset. Here we have the first 3 lines of this dataset:
+After assuming the previous, we combined the two data sets one on top of the other, so we have every student in the same data set. Here we have the first 3 lines of this data set:
 ```{r, echo = FALSE}
 student_rb %>% 
   head(3)
 ```
 
-We can see that the attributes haven't changed. 
+```{r, echo=FALSE}
+student_rb %>% 
+  select(school) %>% 
+  count(school) #%>% 
+  #pull()
+```
+
+We can see that the attributes haven't changed.
+
+There is $772$ students in the School of *Gabriel Pereira* and $272$ students in the School of *Mousinho da Silveira*.
+
+Furthermore in the data set it is assumed that every student has one mother and one father, which nowadays assuming that would be incorrect, since there are homosexual couples and there are children without one parent, for example adoption by one single parent.
 
 ## Plots
 
 ### Number of students
 
-Since we are comparing two schools, it is always interesting to look at the number of students in each age. Do both schools have a similar age range of students ?
+Since we are comparing two schools, it is always interesting to look at the number of students in each age. Do both schools have a similar age range for the students ?
 
 ```{r, include = FALSE}
 number_of_students_per_school <- student_rb %>% 
@@ -149,19 +161,19 @@ group1 %>%
         axis.title.y = element_text(margin = margin(r = -8)))
 ```
 
-In this plot we can see the comparison of the two schools in percentage of students. First, let us see the data for the *School of Gabriel Pereira*:
+In this plot we can see the comparison of the number of students in percentage for each school. First, let us see the data for the *School of Gabriel Pereira*:
 
-It has the highest percentage of students with $16$ years of age. There isn't a lot of students which are between $20-22$ year old, since the percentages of students in those ages are close to $0$. There seems to be more or less as many females as males.
+It has the highest percentage of students with $16$ years of age. There isn't a lot of students which are between $20-22$ year old, since the percentages of students in those age ranges are close to $0$. There seems to be more or less as many females as males.
 
 Now for the *School of Mousinho da Silveira*:
 
-The highest percentage of students with a specific age is for those students of $18$ years old. This percentage is almost $30\%$ of  the total number of students. There is no student with $22$ years. However in this school we can clearly say that there are more female students than male students.
+The highest percentage of students with a specific age is for those students of $18$ years old. This percentage is almost $30\%$ of  the total number of students in this highschool. There is no students with $22$ years. However in this school we can clearly say that there are more female students than male students.
 
-Now if we would answer the question, we can say that the percentage of students for a specific range are very similar even though the the percentage of genders are not equal.
+Now if we would answer the question from before, we can say that the percentage of students for a specific range are very similar for both schools even though the the percentage of genders are not equal.
 
 ### Grades of the students 
 
-A good way to see if the teaching is good in particular schools is to see the grades for each school. Do the students of the school of Gabriel Pereira have better grades than those of the school of Mousinho de Silveira ? To answer that questions we are looking at the grades for *Mathematics course* and *Portuguese course*.
+A good way to see if the teaching is good in a particular school is to see the average grades of the students for each school. Do the students of the school of Gabriel Pereira have better grades than those of the school of Mousinho de Silveira ? To answer that questions we are looking at the grades for *Mathematics course* and *Portuguese course* together.
 
 ```{r, include = FALSE}
 student_1_pivot <- student_rb %>% 
@@ -191,13 +203,13 @@ student_1_pivot %>%
         axis.ticks.y = element_blank())
 ```
 
-While looking only at the density of the grades for the first Period and the Second Period we can see that the grades are more diverse in the Second Period than the First Period for both Schools.
+While looking only at the density of the grades for the first Period and the Second Period we can see that the grades are more diverse in the Second Period than the First Period for both highschools.
 
-We can see a peak in the average of both Periods at grade $10$ for the school of *Mousinho da Silveira*. Clearly, there are much more students wanting or being able to just pass. Meanwhile the peak in the average of both Periods is for a number larger than $10$ for School of *Gabriel Pereira*. Also the density of grades for this school is much higher for grades greater than $10$ than for the other school. This means that the students of this school have higher grades than the students from the School of *Mousinho da Silveira*. This means that the award goes to him.
+We can see a peak in the average of both Periods at grade $10$ for the school of *Mousinho da Silveira*. Clearly, there are much more students wanting or being able to just pass with a $10$. Meanwhile the peak in the average of both Periods  for School of *Gabriel Pereira* is for a number larger than $10$. Also the density of grades for this school is much higher for grades greater than $10$ than for the other school. This means that the students of this school have higher grades than the students from the School of *Mousinho da Silveira*.
 
 ### Parents education and jobs
 
-One factor clearly influence the grade of one student, namely the parents! Having a stable life at home can help the student and his school education. The best for the teenager student would be to have parents that can help them with homework or studying at home, since in school they have the teacher for that. However not every mother and father have the possibility of helping for multiple reasons: they don't have enough school education about the subject, they don't have time because of job responsibilities, etc. 
+One factor clearly influence the grade of one student, namely the parents! Having a stable life at home can help the student and his school education. The best for the teenager student would be to have parents that can help them with homework or studying at home, since in school they have the teacher for that. However not every parent have the possibility of helping for multiple reasons: they don't have enough school education about the subject, they don't have time because of job responsibilities, etc. 
 
 ```{r, include = FALSE}
 student_edu <- student_rb %>% 
@@ -221,7 +233,6 @@ value <- c("", "", "", "", "", "", "", "")
 numbers <- c(0, 0, 0, 0, 0, 0, 0, 0)
 names <- c("a_6", "b_6", "c_6", "d_6", "a_7", "b_7", "c_7", "d_7")
 empty_data <- data.frame(parents, value, numbers, names)
-
 student_data <- rbind(student_comb, empty_data)
 student_arrange <- student_data %>% 
   arrange(parents)
@@ -237,14 +248,14 @@ student_arrange$string_names <- c("no education : 9", "primary education : 256",
 student_arrange
 ```
 ```{r, include = FALSE}
-label_data <- student_arrange
-number_of_bar <- nrow(label_data)
-angle <- 90 - 360 * (label_data$index-0.5) /number_of_bar     # I substract 0.5 because the letter must have the angle of the center of the bars. Not extreme right(1) or extreme left (0)
-label_data$hjust <- ifelse( angle < -90, 1, 0)
-label_data$angle <- ifelse(angle < -90, angle+180, angle)
+data_label <- student_arrange
+number_of_bar <- nrow(data_label)
+angle <- 90 - 360 * (data_label$index-0.5) /number_of_bar
+data_label$hjust <- ifelse(angle < -90, 1, 0)
+data_label$angle <- ifelse(angle < -90, angle+180, angle)
 ```
 ```{r, include = FALSE}
-base_data <- student_arrange %>% 
+data_title <- student_arrange %>% 
   group_by(parents) %>% 
   summarize(start=min(index), end=max(index) - 2) %>% 
   rowwise() %>% 
@@ -258,13 +269,13 @@ student_arrange %>%
   ylim(-900, 700) +
   theme_minimal() +
   coord_polar(start = 0) +
-  geom_text(data = label_data, 
+  geom_text(data = data_label, 
             aes(x = factor(names), y = numbers + 20, label = string_names, hjust = hjust), 
             color = "black", fontface = "bold", size = 2, 
-            angle = label_data$angle, inherit.aes = FALSE) +
-  geom_segment(data=base_data, aes(x = start, y = -5, xend = end, yend = -5), 
+            angle = data_label$angle, inherit.aes = FALSE) +
+  geom_segment(data = data_title, aes(x = start, y = -5, xend = end, yend = -5), 
                colour = "black", alpha=0.8, size=0.6 , inherit.aes = FALSE)  +
-  geom_text(data=base_data, 
+  geom_text(data = data_title, 
             aes(x = title, y = -18, 
                 label=c("Father's education", "Father's job", "Mother's education", "Mother's job")), 
             hjust=c(0.5,0.5,0.5,0.5), vjust = c(2.2, -1.3, -1.6, 2.2), colour = "black", alpha=0.8, size=2.5, 
@@ -280,24 +291,22 @@ student_arrange %>%
         plot.title = element_text(hjust = 0.5, vjust = -75, face = "bold"))
 ```
 
-At first glance, there are more students having a mother with higher education. In the other hand, there are more students with a father having only between $5th$ and $9th$ grade education. 
+At first glance, there are more students having a mother with a higher education. In the other hand, there are more students with a father having only between $5th$ and $9th$ grade education. 
 
-A small remark would be that there is still parents with no education at all in $2014$. From this data, it seems that men are less motivated to continue theirs school education than women. 
+As expected, there are more mothers being stay-at-home mothers than there are fathers. There is a difference of $194-62 = 132$ stay-at-home parents. Now something not expected was that there are more women which are mothers working as a teacher or as in health department then men which are fathers. The difference between the numbers of mothers and fathers are $130-65 = 65$ teachers and $82-41 = 41$ jobs in health. The majority of the mother's and father's jobs are in other which makes sense since there are much more job categories now than just: teacher, services, health and stay_at_home.
 
-As expected, there are more mothers being stay-at-home mothers than there are fathers. There is a difference of $194-62 = 132$ stay-at-home parent. Now something not expected was that there are more women which are mothers working as a teacher or as in health department then men which are fathers. The difference between the numbers of mothers and fathers are $130-65 = 65$ teachers and $82-41 = 41$ jobs in health. The majority of the mother's and father's jobs are in other which makes sense since there are much more job categories now than just: teacher, services, health and stay_at_home.
+The "other" category is too big to have a clear conclusion if the majority of the parents have the enough knowledge to help their children on their schools problems.
+
+A very important remark would be that there is still parents with no education at all in $2008$. From this data, it seems that men are less motivated to continue theirs school education than women. 
 
 ## Conclusion
 
-Of course the study done here is just a small part of a poosible big study, however we can conclude some information from it. 
+Of course the study done here is just a small part of a possible big study, however we can conclude some information from it. 
 First is that the age range of School of *Gabriel Pereira* is larger than the age range of the School of *Mousinho da Silveira*. This can mean that there are more students failing some classes or that the other school's students are giving up school education more frequently after $18$ years.
-However we stated that the students from School of *Gabriel Pereira* have better grades than the students of the School of *Mousinho da Silveira*. This fact kind of contradicts the first conclusion, because why is the grades so high even though there are so many students failing classes or giving up?
+However we stated that the students from School of *Gabriel Pereira* have better grades than the students of the School of *Mousinho da Silveira*. This fact kind of contradicts the first conclusion, because why is the grades so high even though there are so many students failing classes or giving up? Or are the older students, which already failed some classes in the past having better grades that year ? It would be nice to have some data from the previous year, so we can see the development of one student's school career for the years $2007-2008$.
 Now the last plot could have helped us to understand the grades a little bit better but the category of "Others" for the jobs of the parents of the students is so vague. It is difficult to understand the origin of such good grades.
 
 At the end, the most important here was to find out which school has the highest grades. And the award for that goes to .... School of *Gabriel Pereira*. Now the question is why ? What are they doing differently from the School of *Mousinho da Silveira* that makes the students having better grades ? Maybe a further study will tell us.
-
-**Small criticism about the datasets**:
-
-Nowadays assuming that one student has one mother and one father would be incorrect, since there are homosexual couples and there are children without one parent, for example adoption by one single parent.
 
 ## Sources
 
