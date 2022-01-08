@@ -26,7 +26,7 @@ When searching for a data set, we wanted to search for some data about students 
 
 We have data from two different high schools in Portugal. The two schools are School of Gabriel Pereira and School of Mousinho da Silveira. The School of Mousinho da Silveira is in Portalegre and the School of Gabriel Pereira is in Évora. Both schools are public schools, so we can assume that the level of teaching balanced is.
 
-We are going to study both schools to award one with the highest grades. Of course, only the grades will not determine which school is the best. However it can help us understand which variables effect more on the student's grade.
+We are going to study both schools to award one with the highest grades. Of course, only the grades will not determine which school is the best. However, it can help us understand which variables affect more the student's grade.
 
 ## Information about the datasets
 
