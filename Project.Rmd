@@ -24,7 +24,7 @@ library(ggridges)
 
 When searching for a data set, we wanted to search for some data about students and their grades. Here we found one which was published in $2014-11-27$ with data collected in $2008$.
 
-We have data from two different high schools in Portugal. The two schools are School of Gabriel Pereira and School of Mousinho da Silveira. The School of Mousinho da Silveira is in Portalegre and the School of Gabriel Pereira is in Évora. Both schools are public schools, so we can assume that the level of teaching balanced is.
+We have data from two different high schools in Portugal. The two schools are School of *Gabriel Pereira* and School of *Mousinho da Silveira*. The School of *Mousinho da Silveira* is in Portalegre and the School of *Gabriel Pereira* is in Évora. Both schools are public schools, so we can assume that the level of teaching balanced is.
 
 We are going to study both schools to award one with the highest grades. Of course, only the grades will not determine which school is the best. However, it can help us understand which variables affect more the student's grade.
 
@@ -39,7 +39,7 @@ student_rb <- rbind(dataset_mat, dataset_por)
 student_rb
 ```
 
-The most interesting about this study was the data sets. In total we have two data sets given by the website Machine Learning Repository. Both data sets show the following attributes and their domains:
+The most interesting about this study was the data sets. In total we have two data sets given by the website *Machine Learning Repository*. Both data sets show the following attributes and their domains:
 
 * student's sex: "GP" - Gabriel Pereira, "MS" - Mousinho da Silveira;
 * student's gender: "F" - female, "M" - male;
